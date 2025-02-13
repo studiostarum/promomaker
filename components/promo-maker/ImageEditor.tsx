@@ -53,9 +53,27 @@ export function ImageEditor({
   onOverlayVisibleChange,
   onOverlayOpacityChange,
 }: ImageEditorProps) {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const handleReset = (centerView: () => void, setTransform: (x: number, y: number, scale: number) => void) => {
+    if (imgRef.current) {
+      const img = imgRef.current;
+      const containerWidth = img.parentElement?.clientWidth || 600;
+      const containerHeight = img.parentElement?.clientHeight || 600;
+      
+      const widthRatio = containerWidth / img.naturalWidth;
+      const heightRatio = containerHeight / img.naturalHeight;
+      const scale = Math.min(widthRatio, heightRatio);
+      
+      centerView();
+      setTransform(0, 0, scale);
+      onTransformChange({ scale, x: 0, y: 0 });
+    }
+  };
+
   return (
-    <div className="space-y-2">
-      <div className="relative aspect-square border rounded-lg overflow-hidden bg-muted/10">
+    <div className="space-y-2 h-full">
+      <div className="relative h-full border rounded-lg overflow-hidden bg-muted/10">
         <TransformWrapper
           minScale={0.5}
           maxScale={3}
@@ -87,12 +105,18 @@ export function ImageEditor({
               >
                 {image ? (
                   <img
+                    ref={imgRef}
                     src={image}
                     alt="Base Image"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full"
                     style={{
-                      minWidth: "100%",
-                      minHeight: "100%",
+                      objectFit: 'cover',
+                      aspectRatio: '1/1',
+                      width: '40rem',
+                      height: '40rem',
+                    }}
+                    onLoad={() => {
+                      handleReset(centerView, setTransform);
                     }}
                   />
                 ) : (
@@ -166,7 +190,7 @@ export function ImageEditor({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => resetTransform()}
+                    onClick={() => handleReset(centerView, setTransform)}
                     aria-label="Reset transform"
                   >
                     <RotateCcw className="h-4 w-4" />

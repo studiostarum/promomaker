@@ -36,6 +36,13 @@ function compressImage(dataUrl: string, maxSize: number): Promise<string> {
   });
 }
 
+const getLocalStorageItem = (key: string): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+};
+
 export function usePromoMaker() {
   const [image, setImage] = useState<string | null>(null);
   const [savedImages, setSavedImages] = useState<SavedImage[]>([]);
@@ -46,28 +53,82 @@ export function usePromoMaker() {
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [imageToOverwrite, setImageToOverwrite] = useState<number | null>(null);
   const [previewOverwrite, setPreviewOverwrite] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Load saved images from localStorage on mount
+  // Initialize state after mount
   useEffect(() => {
+    setIsMounted(true);
+    
+    // Load saved images
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       setSavedImages(JSON.parse(saved));
     }
+
+    // Load selected image index
+    const selectedIndex = localStorage.getItem('image_editor_selectedIndex');
+    if (selectedIndex !== null) {
+      setSelectedImageIndex(Number(selectedIndex));
+    }
+
+    // Load transform
+    const transform = localStorage.getItem('image_editor_transform');
+    if (transform) {
+      setImageTransform(JSON.parse(transform));
+    }
+
+    // Load overlay settings
+    const overlayVisible = localStorage.getItem('image_editor_overlayVisible');
+    if (overlayVisible !== null) {
+      setOverlayVisible(overlayVisible === 'true');
+    }
+
+    const overlayOpacity = localStorage.getItem('image_editor_overlayOpacity');
+    if (overlayOpacity !== null) {
+      setOverlayOpacity(Number(overlayOpacity));
+    }
   }, []);
 
-  // Save to localStorage whenever savedImages changes
+  // Only persist changes after mount
   useEffect(() => {
-    if (savedImages.length > 0) {
+    if (isMounted && savedImages.length > 0) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedImages));
       } catch (error) {
         if (error instanceof Error) {
           console.error('Failed to save to localStorage:', error.message);
-          // Could add user notification here
         }
       }
     }
-  }, [savedImages]);
+  }, [savedImages, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('image_editor_overlayVisible', overlayVisible.toString());
+    }
+  }, [overlayVisible, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('image_editor_overlayOpacity', overlayOpacity.toString());
+    }
+  }, [overlayOpacity, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      if (selectedImageIndex !== null) {
+        localStorage.setItem('image_editor_selectedIndex', selectedImageIndex.toString());
+      } else {
+        localStorage.removeItem('image_editor_selectedIndex');
+      }
+    }
+  }, [selectedImageIndex, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('image_editor_transform', JSON.stringify(imageTransform));
+    }
+  }, [imageTransform, isMounted]);
 
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -77,7 +138,6 @@ export function usePromoMaker() {
         const result = e.target?.result as string;
         const compressed = await compressImage(result, MAX_IMAGE_SIZE);
         setImage(compressed);
-        setImageTransform({ scale: 1, x: 0, y: 0 });
       };
       reader.readAsDataURL(file);
     }
@@ -97,7 +157,6 @@ export function usePromoMaker() {
               const result = e.target?.result as string;
               const compressed = await compressImage(result, MAX_IMAGE_SIZE);
               setImage(compressed);
-              setImageTransform({ scale: 1, x: 0, y: 0 });
             };
             reader.readAsDataURL(file);
           }
@@ -277,6 +336,17 @@ export function usePromoMaker() {
     };
     img.src = image;
   };
+
+  // Add effect to load selected image on mount
+  useEffect(() => {
+    if (selectedImageIndex !== null) {
+      const savedImage = savedImages[selectedImageIndex];
+      if (savedImage) {
+        setImage(savedImage.original);
+        setImageTransform(savedImage.transform);
+      }
+    }
+  }, [selectedImageIndex, savedImages]);
 
   return {
     image,
