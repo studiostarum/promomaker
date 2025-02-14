@@ -1,13 +1,19 @@
 import { useEffect } from 'react'
-import { ImageTransform, OVERLAY_TYPES } from '@/lib/constants'
+import { ImageTransform, OVERLAY_TYPES } from '../lib/constants'
 
-interface UseKeyboardShortcutsProps extends ImageTransform {
+interface UseKeyboardShortcutsProps {
   isEnabled: boolean
+  scale: number
+  offsetX: number
+  offsetY: number
+  overlayType: string | null
   onTransformChange: (transform: Partial<ImageTransform>) => void
   onSave?: () => void
   onReset?: () => void
   onUndo?: () => void
   onRedo?: () => void
+  onSaveState?: () => void
+  onShowSavedStates?: () => void
 }
 
 export function useKeyboardShortcuts({
@@ -21,21 +27,33 @@ export function useKeyboardShortcuts({
   onReset,
   onUndo,
   onRedo,
+  onSaveState,
+  onShowSavedStates,
 }: UseKeyboardShortcutsProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isEnabled) return
 
-      // Handle undo/redo
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
-        if (e.key === 'z') {
+      // Handle undo/redo and save state shortcuts
+      if ((e.metaKey || e.ctrlKey) && !e.altKey) {
+        if (e.key === 'z' && !e.shiftKey) {
           e.preventDefault()
           onUndo?.()
           return
         }
-        if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+        if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
           e.preventDefault()
           onRedo?.()
+          return
+        }
+        if (e.key === 's') {
+          e.preventDefault()
+          onSaveState?.()
+          return
+        }
+        if (e.key === 'b') {
+          e.preventDefault()
+          onShowSavedStates?.()
           return
         }
       }
@@ -71,10 +89,14 @@ export function useKeyboardShortcuts({
           onTransformChange({ scale: scale - scaleStep })
           break
         case '1':
-          onTransformChange({ overlayType: OVERLAY_TYPES.CINEMATIC })
+          onTransformChange({ 
+            overlayType: overlayType === OVERLAY_TYPES.CINEMATIC ? null : OVERLAY_TYPES.CINEMATIC 
+          })
           break
         case '2':
-          onTransformChange({ overlayType: OVERLAY_TYPES.FULL_FRAME })
+          onTransformChange({ 
+            overlayType: overlayType === OVERLAY_TYPES.FULL_FRAME ? null : OVERLAY_TYPES.FULL_FRAME 
+          })
           break
         case '0':
           onTransformChange({ overlayType: null })
@@ -95,10 +117,13 @@ export function useKeyboardShortcuts({
     scale,
     offsetX,
     offsetY,
+    overlayType,
     onTransformChange,
     onSave,
     onReset,
     onUndo,
-    onRedo
+    onRedo,
+    onSaveState,
+    onShowSavedStates
   ])
 }

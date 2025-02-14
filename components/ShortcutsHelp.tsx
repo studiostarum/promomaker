@@ -18,6 +18,8 @@ const SHORTCUTS = [
   { key: '0', description: 'Remove overlay' },
   { key: 'R', description: 'Reset all transformations' },
   { key: 'S', description: 'Save image' },
+  { key: 'Ctrl + S', description: 'Save current state' },
+  { key: 'Ctrl + B', description: 'Browse saved states' },
   { key: 'Ctrl + Z', description: 'Undo' },
   { key: 'Ctrl + Y', description: 'Redo' },
   { key: '?', description: 'Show/hide shortcuts' }

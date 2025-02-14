@@ -1,16 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ImageTransform, IMAGE_CONSTRAINTS, OVERLAY_TYPES } from '@/lib/constants'
+import { ImageTransform, IMAGE_CONSTRAINTS, OVERLAY_TYPES, OverlayType } from '@/lib/constants'
+import { 
+  Layers, 
+  ChevronDown, 
+  LayoutPanelTop, 
+  LayoutTemplate, 
+  X, 
+  Save, 
+  BookMarked,
+  Download,
+  Keyboard 
+} from 'lucide-react'
+import { SavedStatesDialog } from './SavedStatesDialog'
+import { useSavedStates, SavedState } from '@/hooks/useSavedStates'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { toast } from '@/hooks/use-toast'
 
-interface ImageControlsProps extends ImageTransform {
+interface ImageControlsProps {
   image: string | null
+  scale: number
+  offsetX: number
+  offsetY: number
+  overlayType: OverlayType | null
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   onTransformChange: (transform: Partial<ImageTransform>) => void
   onSave: () => void
   onReset: () => void
+  onRestoreState?: (state: SavedState) => void
   darkMode?: boolean
 }
 
@@ -24,9 +45,47 @@ export function ImageControls({
   onTransformChange,
   onSave,
   onReset,
+  onRestoreState,
   darkMode
 }: ImageControlsProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [showSavedStates, setShowSavedStates] = useState(false)
+  const [saveName, setSaveName] = useState('')
+  const [showSaveInput, setShowSaveInput] = useState(false)
+  const { 
+    savedStates, 
+    saveState, 
+    deleteState, 
+    clearAllStates,
+    exportStates, 
+    importStates,
+    storageUsage,
+    maxStorageSize 
+  } = useSavedStates()
+
+  // Handle keyboard shortcuts
+  useKeyboardShortcuts({
+    isEnabled: Boolean(image),
+    scale,
+    offsetX,
+    offsetY,
+    overlayType,
+    onTransformChange,
+    onSave,
+    onReset,
+    onUndo: undefined, // These will be added in a future PR
+    onRedo: undefined,
+    onSaveState: () => setShowSaveInput(true),
+    onShowSavedStates: () => setShowSavedStates(true)
+  })
+
+  // Auto-generate save name based on date/time
+  useEffect(() => {
+    if (showSaveInput && !saveName) {
+      const now = new Date()
+      setSaveName(`Edit ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`)
+    }
+  }, [showSaveInput, saveName])
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -50,6 +109,104 @@ export function ImageControls({
       onImageUpload(event)
     }
   }
+
+  const handleSaveState = async () => {
+    if (!image) return
+    
+    if (!saveName) {
+      setShowSaveInput(true)
+      return
+    }
+
+    try {
+      await saveState({
+        name: saveName,
+        imageData: image,
+        transform: {
+          scale,
+          offsetX,
+          offsetY,
+          overlayType
+        }
+      })
+
+      toast({
+        title: "State saved",
+        description: `Saved as "${saveName}"`,
+      })
+
+      setSaveName('')
+      setShowSaveInput(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save state",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleRestoreState = useCallback((state: SavedState) => {
+    if (!onRestoreState) return
+    
+    try {
+      onRestoreState(state)
+      setShowSavedStates(false)
+      toast({
+        title: "State restored",
+        description: `Restored "${state.name}"`,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to restore state",
+        variant: "destructive"
+      })
+    }
+  }, [onRestoreState, toast])
+
+  const handleImportStates = async (jsonData: string) => {
+    try {
+      await importStates(jsonData)
+      toast({
+        title: "States imported",
+        description: "Successfully imported saved states",
+      })
+      return true
+    } catch (error) {
+      toast({
+        title: "Import failed",
+        description: error instanceof Error ? error.message : "Failed to import states",
+        variant: "destructive"
+      })
+      return false
+    }
+  }
+
+  const handleDeleteState = (id: string) => {
+    deleteState(id)
+    toast({
+      title: "State deleted",
+      description: "The saved state has been removed",
+    })
+  }
+
+  const handleClearAllStates = useCallback(async () => {
+    try {
+      clearAllStates()
+      toast({
+        title: "All states cleared",
+        description: "All saved states have been removed",
+      })
+      setShowSavedStates(false) // Close dialog after successful clear
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear saved states",
+        variant: "destructive"
+      })
+    }
+  }, [clearAllStates, toast])
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -212,6 +369,71 @@ export function ImageControls({
           </div>
 
           <div className="space-y-4">
+            {showSaveInput ? (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Save Current State</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter a name for this state"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveState()
+                      } else if (e.key === 'Escape') {
+                        setShowSaveInput(false)
+                        setSaveName('')
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleSaveState}
+                    className="dark:border-border dark:text-foreground whitespace-nowrap"
+                    disabled={!saveName.trim()}
+                  >
+                    <Save className="w-4 h-4" />
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setShowSaveInput(false)
+                      setSaveName('')
+                    }}
+                    className="dark:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Keyboard className="w-3 h-3" /> Press Enter to save, Esc to cancel
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveInput(true)}
+                  className="flex-1 dark:border-border dark:text-foreground"
+                  title="Save current state (Ctrl+S)"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Current State
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSavedStates(true)}
+                  className="dark:border-border dark:text-foreground"
+                  title="View saved states (Ctrl+B)"
+                >
+                  <BookMarked className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
             <Label className={darkMode ? 'text-gray-200' : ''}>Overlay</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -226,23 +448,26 @@ export function ImageControls({
                   }
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+              <DropdownMenuContent className="dark:bg-card">
                 <DropdownMenuItem 
                   onClick={() => onTransformChange({ overlayType: OVERLAY_TYPES.CINEMATIC })}
-                  className={darkMode ? 'hover:bg-gray-700' : ''}
+                  className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
+                  <LayoutPanelTop className="h-4 w-4" />
                   Cinematic Bars (1)
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => onTransformChange({ overlayType: OVERLAY_TYPES.FULL_FRAME })}
-                  className={darkMode ? 'hover:bg-gray-700' : ''}
+                  className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
+                  <LayoutTemplate className="h-4 w-4" />
                   Full Frame Bars (2)
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => onTransformChange({ overlayType: null })}
-                  className={darkMode ? 'hover:bg-gray-700' : ''}
+                  className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
+                  <X className="h-4 w-4" />
                   Remove Overlay (0)
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -251,13 +476,28 @@ export function ImageControls({
             <Button 
               onClick={onSave} 
               className={`w-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-              title="Save image (S)"
+              title="Export image (S)"
             >
-              Save Image
+              <Download className="w-4 h-4" />
+              Export Image
             </Button>
           </div>
         </div>
       )}
+
+      <SavedStatesDialog
+        isOpen={showSavedStates}
+        onOpenChange={setShowSavedStates}
+        savedStates={savedStates}
+        onRestoreState={handleRestoreState}
+        onDeleteState={handleDeleteState}
+        onClearAllStates={savedStates.length > 0 ? handleClearAllStates : undefined}
+        onExportStates={exportStates}
+        onImportStates={handleImportStates}
+        storageUsage={storageUsage}
+        maxStorageSize={maxStorageSize}
+        darkMode={darkMode}
+      />
     </div>
   )
 }

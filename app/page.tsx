@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ImageCanvas } from '@/components/ImageCanvas'
 import { ImageControls } from '@/components/ImageControls'
 import { PreferencesDialog } from '@/components/PreferencesDialog'
@@ -8,6 +8,7 @@ import { useImageEditor } from '@/hooks/useImageEditor'
 import { useTransformHistory } from '@/hooks/useTransformHistory'
 import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { Button } from '@/components/ui/button'
+import { Settings } from 'lucide-react'
 
 export default function Home() {
   const [showPreferences, setShowPreferences] = useState(false)
@@ -17,10 +18,13 @@ export default function Home() {
     image,
     handleImageUpload,
     saveImage,
+    handleTransformChange,
+    handleRestoreState,
+    ...transform
   } = useImageEditor()
 
   const {
-    transform,
+    transform: historyTransform,
     updateTransform,
     undo,
     redo,
@@ -28,6 +32,12 @@ export default function Home() {
     canUndo,
     canRedo
   } = useTransformHistory(preferences.defaultTransform)
+
+  useEffect(() => {
+    if (historyTransform) {
+      handleTransformChange(historyTransform)
+    }
+  }, [historyTransform, handleTransformChange])
 
   return (
     <main className={`min-h-screen bg-gradient-to-br ${
@@ -50,8 +60,11 @@ export default function Home() {
           <Button
             variant="outline"
             onClick={() => setShowPreferences(true)}
-            className={preferences.darkMode ? 'border-gray-700' : ''}
+            className={`flex items-center gap-2 ${
+              preferences.darkMode ? 'border-border text-foreground hover:bg-accent/20' : ''
+            }`}
           >
+            <Settings className="h-4 w-4" />
             Preferences
           </Button>
         </div>
@@ -65,6 +78,7 @@ export default function Home() {
               onTransformChange={updateTransform}
               onSave={saveImage}
               onReset={() => reset(preferences.defaultTransform)}
+              onRestoreState={handleRestoreState}
               darkMode={preferences.darkMode}
             />
           </div>

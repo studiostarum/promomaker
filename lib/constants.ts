@@ -12,13 +12,13 @@ export const OVERLAY_TYPES = {
   FULL_FRAME: 'full-frame',
 } as const
 
-export type OverlayType = typeof OVERLAY_TYPES[keyof typeof OVERLAY_TYPES] | null
+export type OverlayType = typeof OVERLAY_TYPES[keyof typeof OVERLAY_TYPES]
 
 export interface ImageTransform {
   scale: number
   offsetX: number
   offsetY: number
-  overlayType: OverlayType
+  overlayType: OverlayType | null
 }
 
 export const DEFAULT_TRANSFORM: ImageTransform = {

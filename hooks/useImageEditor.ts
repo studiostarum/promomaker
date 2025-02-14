@@ -7,6 +7,7 @@ import {
   DEFAULT_TRANSFORM,
   OverlayType 
 } from '@/lib/constants'
+import { SavedState } from './useSavedStates'
 
 interface UseImageEditorReturn extends ImageTransform {
   image: string | null
@@ -16,6 +17,7 @@ interface UseImageEditorReturn extends ImageTransform {
   handleTransformChange: (transform: Partial<ImageTransform>) => void
   handleReset: () => void
   saveImage: () => void
+  handleRestoreState: (state: SavedState) => void
 }
 
 export function useImageEditor(): UseImageEditorReturn {
@@ -114,6 +116,11 @@ export function useImageEditor(): UseImageEditorReturn {
     saveCurrentSettings()
   }, [image, transform])
 
+  const handleRestoreState = useCallback((state: SavedState) => {
+    setImage(state.imageData)
+    setTransform(state.transform)
+  }, [])
+
   return {
     image,
     isLoading,
@@ -123,5 +130,6 @@ export function useImageEditor(): UseImageEditorReturn {
     handleTransformChange,
     handleReset,
     saveImage,
+    handleRestoreState,
   }
 }

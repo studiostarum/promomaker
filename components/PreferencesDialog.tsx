@@ -1,9 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { ImageTransform } from '@/lib/constants'
+import { Settings, RotateCcw } from 'lucide-react'
 
 interface PreferencesDialogProps {
   isOpen: boolean
@@ -32,12 +33,15 @@ export function PreferencesDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editor Preferences</DialogTitle>
+          <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Editor Preferences
+          </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="auto-save">Auto-save settings</Label>
+        <div className="grid gap-6 py-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between space-x-4">
+              <Label htmlFor="auto-save" className="text-sm font-medium">Auto-save settings</Label>
               <Switch
                 id="auto-save"
                 checked={autoSaveSettings}
@@ -45,8 +49,8 @@ export function PreferencesDialog({
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label htmlFor="dark-mode">Dark mode</Label>
+            <div className="flex items-center justify-between space-x-4">
+              <Label htmlFor="dark-mode" className="text-sm font-medium">Dark mode</Label>
               <Switch
                 id="dark-mode"
                 checked={darkMode}
@@ -54,8 +58,8 @@ export function PreferencesDialog({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Default Scale</Label>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Default Scale</Label>
               <Slider
                 value={[defaultTransform.scale]}
                 onValueChange={([value]) => 
@@ -68,16 +72,24 @@ export function PreferencesDialog({
                 step={0.1}
                 className="w-full"
               />
-              <div className="text-xs text-gray-500 text-right">
+              <div className="text-xs text-muted-foreground text-right">
                 {defaultTransform.scale.toFixed(1)}x
               </div>
             </div>
 
-            <div className="pt-4 space-x-2 flex justify-end">
-              <Button variant="outline" onClick={onResetPreferences}>
+            <div className="pt-4 flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={onResetPreferences}
+                className="dark:border-border dark:text-foreground dark:hover:bg-secondary/80"
+              >
+                <RotateCcw className="w-4 h-4" />
                 Reset to Defaults
               </Button>
-              <Button onClick={() => onOpenChange(false)}>
+              <Button 
+                onClick={() => onOpenChange(false)}
+                className="dark:text-primary-foreground"
+              >
                 Done
               </Button>
             </div>
