@@ -1,4 +1,4 @@
-import { IMAGE_CONSTRAINTS, OverlayType } from './constants'
+import { OverlayType } from './constants'
 
 export const calculateImageHash = async (imageData: string) => {
   const data = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(imageData))

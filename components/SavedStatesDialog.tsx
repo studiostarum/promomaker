@@ -5,6 +5,7 @@ import { SavedState } from '@/hooks/useSavedStates'
 import { Save, Trash2, Download, Upload, Clock, XCircle, Database, AlertTriangle } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { formatFileSize } from '@/lib/utils'
+import Image from 'next/image'
 
 interface SavedStatesDialogProps {
   isOpen: boolean
@@ -178,11 +179,14 @@ export function SavedStatesDialog({
               >
                 <div className="aspect-square mb-2 bg-secondary/20 rounded relative overflow-hidden">
                   {state.thumbnail && (
-                    <img 
-                      src={state.thumbnail} 
-                      alt={state.name}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
+                    <div className="absolute inset-0 w-full h-full relative">
+                      <Image
+                        src={state.thumbnail}
+                        alt="Saved state preview"
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <Button

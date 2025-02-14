@@ -5,13 +5,12 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ImageTransform, IMAGE_CONSTRAINTS, OVERLAY_TYPES, OverlayType } from '@/lib/constants'
-import { 
-  Layers, 
-  ChevronDown, 
-  LayoutPanelTop, 
-  LayoutTemplate, 
-  X, 
-  Save, 
+import {
+  ChevronDown,
+  LayoutPanelTop,
+  LayoutTemplate,
+  X,
+  Save,
   BookMarked,
   Download,
   Keyboard,
@@ -41,8 +40,8 @@ interface ImageControlsProps {
   darkMode?: boolean
 }
 
-export function ImageControls({ 
-  image, 
+export function ImageControls({
+  image,
   scale,
   offsetX,
   offsetY,
@@ -58,19 +57,15 @@ export function ImageControls({
   const [showSavedStates, setShowSavedStates] = useState(false)
   const [saveName, setSaveName] = useState('')
   const [showSaveInput, setShowSaveInput] = useState(false)
-  const [exportFormat, setExportFormat] = useState<ImageExportOptions>({
-    format: 'image/png',
-    quality: 0.9
-  })
-  const { 
-    savedStates, 
-    saveState, 
-    deleteState, 
+  const {
+    savedStates,
+    saveState,
+    deleteState,
     clearAllStates,
-    exportStates, 
+    exportStates,
     importStates,
     storageUsage,
-    maxStorageSize 
+    maxStorageSize
   } = useSavedStates()
 
   // Handle keyboard shortcuts
@@ -134,7 +129,7 @@ export function ImageControls({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    
+
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith('image/')) {
       const event = {
@@ -146,7 +141,7 @@ export function ImageControls({
 
   const handleSaveState = async () => {
     if (!image) return
-    
+
     if (!saveName) {
       setShowSaveInput(true)
       return
@@ -182,7 +177,7 @@ export function ImageControls({
 
   const handleRestoreState = useCallback((state: SavedState) => {
     if (!onRestoreState) return
-    
+
     try {
       onRestoreState(state)
       setShowSavedStates(false)
@@ -190,7 +185,7 @@ export function ImageControls({
         title: "State restored",
         description: `Restored "${state.name}"`,
       })
-    } catch (error) {
+    } catch {  // removed unused catch parameter
       toast({
         title: "Error",
         description: "Failed to restore state",
@@ -246,27 +241,26 @@ export function ImageControls({
         description: "All saved states have been removed",
       })
       setShowSavedStates(false) // Close dialog after successful clear
-    } catch (error) {
+    } catch {  // removed unused catch parameter
       toast({
         title: "Error",
         description: "Failed to clear saved states",
         variant: "destructive"
       })
     }
-  }, [clearAllStates, toast])
+  }, [clearAllStates])
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div 
-        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${
-          isDragging 
-            ? darkMode 
-              ? 'border-blue-500 bg-blue-500/10' 
+      <div
+        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${isDragging
+            ? darkMode
+              ? 'border-blue-500 bg-blue-500/10'
               : 'border-blue-500 bg-blue-50'
             : darkMode
               ? 'border-gray-700 hover:border-gray-600'
               : 'border-gray-300 hover:border-gray-400'
-        }`}
+          }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -277,20 +271,18 @@ export function ImageControls({
           onChange={onImageUpload}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
-        <div className={`text-center text-sm ${
-          darkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          {isDragging 
-            ? 'Drop image here' 
+        <div className={`text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+          {isDragging
+            ? 'Drop image here'
             : 'Drop image here, paste from clipboard, or click to upload'}
         </div>
-        <div className={`text-center text-xs mt-1 ${
-          darkMode ? 'text-gray-500' : 'text-gray-400'
-        }`}>
+        <div className={`text-center text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'
+          }`}>
           Supports JPG, PNG, and WebP
         </div>
       </div>
-      
+
       {image && (
         <div className="space-y-6">
           <div className="space-y-4">
@@ -298,7 +290,7 @@ export function ImageControls({
               <Label className={darkMode ? 'text-gray-200' : ''}>
                 Image Adjustments
               </Label>
-              <Button 
+              <Button
                 variant={darkMode ? "ghost" : "outline"}
                 size="sm"
                 onClick={onReset}
@@ -312,12 +304,11 @@ export function ImageControls({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label className={darkMode ? 'text-gray-200' : ''}>Scale</Label>
-                <button 
-                  className={`text-xs ${
-                    darkMode 
-                      ? 'text-gray-400 hover:text-gray-200' 
+                <button
+                  className={`text-xs ${darkMode
+                      ? 'text-gray-400 hover:text-gray-200'
                       : 'text-gray-500 hover:text-gray-900'
-                  }`}
+                    }`}
                   onClick={() => onTransformChange({ scale: 1 })}
                   title="Reset scale"
                 >
@@ -350,12 +341,11 @@ export function ImageControls({
                 <Label className={darkMode ? 'text-gray-200' : ''}>
                   Horizontal Position
                 </Label>
-                <button 
-                  className={`text-xs ${
-                    darkMode 
-                      ? 'text-gray-400 hover:text-gray-200' 
+                <button
+                  className={`text-xs ${darkMode
+                      ? 'text-gray-400 hover:text-gray-200'
                       : 'text-gray-500 hover:text-gray-900'
-                  }`}
+                    }`}
                   onClick={() => onTransformChange({ offsetX: 0 })}
                   title="Center horizontally"
                 >
@@ -388,12 +378,11 @@ export function ImageControls({
                 <Label className={darkMode ? 'text-gray-200' : ''}>
                   Vertical Position
                 </Label>
-                <button 
-                  className={`text-xs ${
-                    darkMode 
-                      ? 'text-gray-400 hover:text-gray-200' 
+                <button
+                  className={`text-xs ${darkMode
+                      ? 'text-gray-400 hover:text-gray-200'
                       : 'text-gray-500 hover:text-gray-900'
-                  }`}
+                    }`}
                   onClick={() => onTransformChange({ offsetY: 0 })}
                   title="Center vertically"
                 >
@@ -491,33 +480,33 @@ export function ImageControls({
             <Label className={darkMode ? 'text-gray-200' : ''}>Overlay</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
+                <Button
                   variant={darkMode ? "ghost" : "outline"}
                   className={`w-full ${darkMode ? 'border-gray-700 hover:bg-gray-800' : ''}`}
                   title="Choose overlay type (1/2/0)"
                 >
-                  {overlayType 
-                    ? `${overlayType.charAt(0).toUpperCase() + overlayType.slice(1)} Overlay` 
+                  {overlayType
+                    ? `${overlayType.charAt(0).toUpperCase() + overlayType.slice(1)} Overlay`
                     : 'Choose Overlay'
                   }
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="dark:bg-card">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onTransformChange({ overlayType: OVERLAY_TYPES.CINEMATIC })}
                   className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
                   <LayoutPanelTop className="h-4 w-4" />
                   Cinematic Bars (1)
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onTransformChange({ overlayType: OVERLAY_TYPES.FULL_FRAME })}
                   className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
                   <LayoutTemplate className="h-4 w-4" />
                   Full Frame Bars (2)
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onTransformChange({ overlayType: null })}
                   className="dark:text-foreground dark:focus:text-foreground dark:focus:bg-accent/20 dark:hover:bg-accent/10"
                 >
@@ -529,7 +518,7 @@ export function ImageControls({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
+                <Button
                   onClick={(e) => e.preventDefault()}
                   className={`w-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
                   title="Export image (S)"
@@ -540,22 +529,22 @@ export function ImageControls({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onSave({ format: 'image/png' })}
                 >
-                  <Image className="w-4 h-4 mr-2" />
+                  <Image className="w-4 h-4 mr-2" aria-label="PNG icon" />
                   PNG (Lossless)
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onSave({ format: 'image/jpeg', quality: 0.9 })}
                 >
-                  <Image className="w-4 h-4 mr-2" />
+                  <Image className="w-4 h-4 mr-2" aria-label="JPEG icon" />
                   JPEG (High Quality)
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onSave({ format: 'image/webp', quality: 0.9 })}
                 >
-                  <Image className="w-4 h-4 mr-2" />
+                  <Image className="w-4 h-4 mr-2" aria-label="WebP icon" />
                   WebP (Best Compression)
                 </DropdownMenuItem>
               </DropdownMenuContent>

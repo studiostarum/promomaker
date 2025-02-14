@@ -25,8 +25,7 @@ export default function Home() {
     handleImageUpload,
     saveImage,
     handleTransformChange: updateEditor,
-    handleRestoreState,
-    ...transform
+    handleRestoreState
   } = useImageEditor()
 
   const {
@@ -52,6 +51,10 @@ export default function Home() {
     reset(newTransform)
     updateEditor(newTransform)
   }, [preferences.defaultTransform, reset, updateEditor])
+
+  useEffect(() => {
+    // Your effect logic here
+  }, []);
 
   return (
     <main className={`min-h-screen bg-gradient-to-br ${isDarkMode
