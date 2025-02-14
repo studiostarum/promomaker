@@ -12,7 +12,6 @@ interface PreferencesDialogProps {
   onOpenChange: (open: boolean) => void
   defaultTransform: Partial<ImageTransform>
   autoSaveSettings: boolean
-  darkMode: boolean
   preferences: EditorPreferences
   onUpdatePreferences: (preferences: Partial<EditorPreferences>) => void
   onResetPreferences: () => void
@@ -23,14 +22,13 @@ export function PreferencesDialog({
   onOpenChange,
   defaultTransform,
   autoSaveSettings,
-  darkMode,
   preferences,
   onUpdatePreferences,
   onResetPreferences,
 }: PreferencesDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? 'dark bg-gray-800 text-white' : ''}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold flex items-center gap-2">
             <Settings className="w-5 h-5" />

@@ -57,26 +57,20 @@ export default function Home() {
   }, []);
 
   return (
-    <main className={`min-h-screen bg-gradient-to-br ${isDarkMode
-        ? 'from-gray-900 to-gray-800 text-white'
-        : 'from-gray-50 to-white'
-      } bg-fixed`}>
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-primary-500 dark:to-primary-700 dark:text-white bg-fixed">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+            <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               Image Editor
             </h1>
-            <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+            <p className="text-gray-600 dark:text-gray-300">
               Upload, adjust, and add overlays to your images
             </p>
           </div>
           <Button
             variant="outline"
             onClick={() => setShowPreferences(true)}
-            className={`flex items-center gap-2 ${isDarkMode ? 'border-border text-foreground hover:bg-accent/20' : ''
-              }`}
           >
             <Settings className="h-4 w-4" />
             Preferences
@@ -93,14 +87,10 @@ export default function Home() {
               onSave={saveImage}
               onReset={handleReset}
               onRestoreState={handleRestoreState}
-              darkMode={isDarkMode}
             />
           </div>
 
-          <div className={`flex-1 flex items-center justify-center p-8 rounded-lg shadow-sm border ${isDarkMode
-              ? 'bg-gray-800 border-gray-700'
-              : 'bg-white border-gray-100'
-            }`}>
+          <div className="flex-1 flex items-center justify-center p-8 rounded-lg shadow-sm border bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700">
             {image ? (
               <ImageCanvas
                 image={image}
@@ -112,13 +102,11 @@ export default function Home() {
                 onRedo={redo}
                 canUndo={canUndo}
                 canRedo={canRedo}
-                darkMode={isDarkMode}
               />
             ) : (
               <div className="text-center text-gray-500">
                 <svg
-                  className={`mx-auto h-12 w-12 mb-4 ${isDarkMode ? 'text-gray-600' : ''
-                    }`}
+                  className="mx-auto h-12 w-12 mb-4 dark:text-gray-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -130,12 +118,10 @@ export default function Home() {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-gray-400' : ''
-                  }`}>
+                <p className="text-lg font-medium mb-2 dark:text-gray-400">
                   No image selected
                 </p>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-500' : ''
-                  }`}>
+                <p className="text-sm dark:text-gray-500">
                   Upload an image to get started
                 </p>
               </div>
@@ -143,8 +129,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={`mt-8 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>
+        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           <p>Press ? for keyboard shortcuts • Ctrl+Z to undo • Ctrl+Y to redo</p>
         </div>
 
@@ -153,7 +138,6 @@ export default function Home() {
           onOpenChange={setShowPreferences}
           defaultTransform={preferences.defaultTransform}
           autoSaveSettings={preferences.autoSaveSettings}
-          darkMode={isDarkMode}
           preferences={preferences}
           onUpdatePreferences={updatePreferences}
           onResetPreferences={resetPreferences}

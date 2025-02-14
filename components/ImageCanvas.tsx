@@ -102,11 +102,7 @@ export function ImageCanvas({
     <div className="relative">
       <canvas 
         ref={canvasRef}
-        className={`rounded-lg aspect-square ${
-          darkMode 
-            ? 'border border-gray-700' 
-            : 'border border-gray-200'
-        } ${isLoading ? 'opacity-50' : ''}`}
+        className={`rounded-lg aspect-square border border-gray-200 dark:border-primary-700 ${isLoading ? 'opacity-50' : ''}`}
         style={{ 
           width: `${IMAGE_CONSTRAINTS.CANVAS_SIZE}px`, 
           height: `${IMAGE_CONSTRAINTS.CANVAS_SIZE}px` 

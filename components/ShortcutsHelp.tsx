@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 interface ShortcutsHelpProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  darkMode?: boolean
 }
 
 const SHORTCUTS = [
@@ -23,26 +22,22 @@ const SHORTCUTS = [
   { key: '?', description: 'Show/hide shortcuts' }
 ] as const
 
-export function ShortcutsHelp({ isOpen, onOpenChange, darkMode }: ShortcutsHelpProps) {
+export function ShortcutsHelp({ isOpen, onOpenChange }: ShortcutsHelpProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className={darkMode ? 'text-gray-100' : ''}>
+          <DialogTitle>
             Keyboard Shortcuts
           </DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 py-4">
           {SHORTCUTS.map(({ key, description }) => (
-            <div key={key} className="flex items-center gap-2">
-              <kbd className={`px-2 py-1 text-xs font-semibold rounded ${
-                darkMode 
-                  ? 'bg-gray-700 text-gray-200 border border-gray-600' 
-                  : 'bg-gray-100 text-gray-800 border border-gray-200'
-              }`}>
+            <div key={key} className="flex flex-col items-start gap-2">
+              <kbd className="px-2 py-1 text-sm uppercase font-semibold rounded bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                 {key}
               </kbd>
-              <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+              <span className="text-gray-600 dark:text-gray-300">
                 {description}
               </span>
             </div>

@@ -179,7 +179,7 @@ export function SavedStatesDialog({
               >
                 <div className="aspect-square mb-2 bg-secondary/20 rounded relative overflow-hidden">
                   {state.thumbnail && (
-                    <div className="absolute inset-0 w-full h-full relative">
+                    <div className="absolute inset-0 w-full h-full">
                       <Image
                         src={state.thumbnail}
                         alt="Saved state preview"
@@ -193,7 +193,7 @@ export function SavedStatesDialog({
                       variant="secondary"
                       size="sm"
                       onClick={() => onRestoreState(state)}
-                      className="dark:bg-background/90"
+                      className="dark:bg-black/90"
                     >
                       Restore
                     </Button>
