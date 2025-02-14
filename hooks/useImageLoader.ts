@@ -1,61 +1,70 @@
-import { useState, useCallback } from 'react'
-import { IMAGE_CONSTRAINTS } from '@/lib/constants'
+import { useState } from 'react'
+import { useToast } from './use-toast'
 
-interface UseImageLoaderReturn {
-  isLoading: boolean
-  loadError: string | null
-  handleImageLoad: (file: File) => Promise<string>
-}
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp'
+]
 
-export function useImageLoader(): UseImageLoaderReturn {
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
+export function useImageLoader() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleImageLoad = useCallback(async (file: File): Promise<string> => {
+  const handleImageLoad = async (file: File): Promise<string> => {
     setIsLoading(true)
     setLoadError(null)
 
     try {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Please upload an image file')
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        throw new Error('Please select a JPG, PNG, or WebP image')
       }
 
       // Validate file size
-      if (file.size > IMAGE_CONSTRAINTS.MAX_FILE_SIZE) {
-        throw new Error(`Please upload an image smaller than ${IMAGE_CONSTRAINTS.MAX_FILE_SIZE / (1024 * 1024)}MB`)
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error('Image size must be less than 10MB')
       }
 
-      // Load and validate image dimensions
-      const loadImagePromise = new Promise<string>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader()
+        
         reader.onload = () => {
+          // Validate that it's actually an image
           const img = new Image()
           img.onload = () => {
-            // Image loaded successfully
+            setIsLoading(false)
             resolve(reader.result as string)
           }
           img.onerror = () => {
-            reject(new Error('Failed to load image. The file might be corrupted.'))
+            setIsLoading(false)
+            reject(new Error('Invalid image file'))
           }
           img.src = reader.result as string
         }
+
         reader.onerror = () => {
-          reject(new Error('Failed to read the image file'))
+          setIsLoading(false)
+          reject(new Error('Failed to read file'))
         }
+
         reader.readAsDataURL(file)
       })
-
-      const imageData = await loadImagePromise
-      setIsLoading(false)
-      return imageData
     } catch (error) {
       setIsLoading(false)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load image'
-      setLoadError(errorMessage)
+      const message = error instanceof Error ? error.message : 'Failed to load image'
+      setLoadError(message)
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      })
       throw error
     }
-  }, [])
+  }
 
   return {
     isLoading,

@@ -5,10 +5,15 @@ import { drawImageOnCanvas, drawOverlay } from '@/lib/imageUtils'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { ImageTransform, IMAGE_CONSTRAINTS } from '@/lib/constants'
 
+interface ImageExportOptions {
+  format: 'image/png' | 'image/jpeg' | 'image/webp'
+  quality?: number
+}
+
 interface ImageCanvasProps extends ImageTransform {
   image: string | null
   onTransformChange: (transform: Partial<ImageTransform>) => void
-  onSave?: () => void
+  onSave: (options: ImageExportOptions) => void
   onReset?: () => void
   onUndo?: () => void
   onRedo?: () => void
@@ -44,7 +49,7 @@ export function ImageCanvas({
     overlayType,
     onTransformChange,
     onSave,
-    onReset,
+    onReset: onReset || (() => {}),
     onUndo,
     onRedo
   })

@@ -14,12 +14,18 @@ import {
   Save, 
   BookMarked,
   Download,
-  Keyboard 
+  Keyboard,
+  Image
 } from 'lucide-react'
 import { SavedStatesDialog } from './SavedStatesDialog'
 import { useSavedStates, SavedState } from '@/hooks/useSavedStates'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { toast } from '@/hooks/use-toast'
+
+interface ImageExportOptions {
+  format: 'image/png' | 'image/jpeg' | 'image/webp'
+  quality?: number
+}
 
 interface ImageControlsProps {
   image: string | null
@@ -29,7 +35,7 @@ interface ImageControlsProps {
   overlayType: OverlayType | null
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   onTransformChange: (transform: Partial<ImageTransform>) => void
-  onSave: () => void
+  onSave: (options: ImageExportOptions) => void
   onReset: () => void
   onRestoreState?: (state: SavedState) => void
   darkMode?: boolean
@@ -52,6 +58,10 @@ export function ImageControls({
   const [showSavedStates, setShowSavedStates] = useState(false)
   const [saveName, setSaveName] = useState('')
   const [showSaveInput, setShowSaveInput] = useState(false)
+  const [exportFormat, setExportFormat] = useState<ImageExportOptions>({
+    format: 'image/png',
+    quality: 0.9
+  })
   const { 
     savedStates, 
     saveState, 
@@ -86,6 +96,30 @@ export function ImageControls({
       setSaveName(`Edit ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`)
     }
   }, [showSaveInput, saveName])
+
+  // Handle clipboard paste
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (const item of items) {
+        if (item.type.startsWith('image/') && item.type !== 'image/gif') {
+          const file = item.getAsFile()
+          if (file) {
+            const event = {
+              target: { files: [file] }
+            } as unknown as React.ChangeEvent<HTMLInputElement>
+            onImageUpload(event)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [onImageUpload])
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -165,6 +199,17 @@ export function ImageControls({
     }
   }, [onRestoreState, toast])
 
+  useEffect(() => {
+    if (onRestoreState) {
+      onTransformChange({
+        scale: scale,
+        offsetX: offsetX,
+        offsetY: offsetY,
+        overlayType: overlayType
+      })
+    }
+  }, [scale, offsetX, offsetY, overlayType, onTransformChange, onRestoreState])
+
   const handleImportStates = async (jsonData: string) => {
     try {
       await importStates(jsonData)
@@ -226,14 +271,21 @@ export function ImageControls({
       >
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           onChange={onImageUpload}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         <div className={`text-center text-sm ${
           darkMode ? 'text-gray-400' : 'text-gray-600'
         }`}>
-          {isDragging ? 'Drop image here' : 'Drop image here or click to upload'}
+          {isDragging 
+            ? 'Drop image here' 
+            : 'Drop image here, paste from clipboard, or click to upload'}
+        </div>
+        <div className={`text-center text-xs mt-1 ${
+          darkMode ? 'text-gray-500' : 'text-gray-400'
+        }`}>
+          Supports JPG, PNG, and WebP
         </div>
       </div>
       
@@ -473,14 +525,39 @@ export function ImageControls({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button 
-              onClick={onSave} 
-              className={`w-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-              title="Export image (S)"
-            >
-              <Download className="w-4 h-4" />
-              Export Image
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  onClick={(e) => e.preventDefault()}
+                  className={`w-full ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                  title="Export image (S)"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Image
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuItem 
+                  onClick={() => onSave({ format: 'image/png' })}
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  PNG (Lossless)
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onSave({ format: 'image/jpeg', quality: 0.9 })}
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  JPEG (High Quality)
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onSave({ format: 'image/webp', quality: 0.9 })}
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  WebP (Best Compression)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       )}

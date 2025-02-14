@@ -9,6 +9,11 @@ import {
 } from '@/lib/constants'
 import { SavedState } from './useSavedStates'
 
+interface ImageExportOptions {
+  format: 'image/png' | 'image/jpeg' | 'image/webp'
+  quality?: number
+}
+
 interface UseImageEditorReturn extends ImageTransform {
   image: string | null
   isLoading: boolean
@@ -16,7 +21,7 @@ interface UseImageEditorReturn extends ImageTransform {
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleTransformChange: (transform: Partial<ImageTransform>) => void
   handleReset: () => void
-  saveImage: () => void
+  saveImage: (options: ImageExportOptions) => void
   handleRestoreState: (state: SavedState) => void
 }
 
@@ -73,7 +78,7 @@ export function useImageEditor(): UseImageEditorReturn {
     }
   }, [handleImageLoad, toast])
 
-  const saveImage = useCallback(() => {
+  const saveImage = useCallback((options: ImageExportOptions) => {
     const canvas = document.querySelector('canvas')
     if (!canvas) {
       toast({
@@ -88,8 +93,18 @@ export function useImageEditor(): UseImageEditorReturn {
       const link = document.createElement('a')
       const now = new Date()
       const timestamp = now.toISOString().replace(/[:.]/g, '-')
-      link.download = `edited-image-${timestamp}.png`
-      link.href = canvas.toDataURL()
+      const ext = options.format.split('/')[1]
+      link.download = `edited-image-${timestamp}.${ext}`
+      
+      // For PNG, we don't need quality setting
+      if (options.format === 'image/png') {
+        link.href = canvas.toDataURL(options.format)
+      } else {
+        // For other formats, use quality setting
+        const quality = options.quality ?? 0.9
+        link.href = canvas.toDataURL(options.format, quality)
+      }
+      
       link.click()
       
       toast({

@@ -13,7 +13,7 @@ import { Settings } from 'lucide-react'
 export default function Home() {
   const [showPreferences, setShowPreferences] = useState(false)
   const { preferences, updatePreferences, resetPreferences } = useEditorPreferences()
-  
+
   const {
     image,
     handleImageUpload,
@@ -40,17 +40,15 @@ export default function Home() {
   }, [historyTransform, handleTransformChange])
 
   return (
-    <main className={`min-h-screen bg-gradient-to-br ${
-      preferences.darkMode 
-        ? 'from-gray-900 to-gray-800 text-white' 
+    <main className={`min-h-screen bg-gradient-to-br ${preferences.darkMode
+        ? 'from-gray-900 to-gray-800 text-white'
         : 'from-gray-50 to-white'
-    } bg-[url('/grid.svg')] bg-fixed`}>
+      } bg-fixed`}>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className={`text-3xl font-bold mb-2 ${
-              preferences.darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h1 className={`text-3xl font-bold mb-2 ${preferences.darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               Image Editor
             </h1>
             <p className={preferences.darkMode ? 'text-gray-300' : 'text-gray-600'}>
@@ -60,15 +58,14 @@ export default function Home() {
           <Button
             variant="outline"
             onClick={() => setShowPreferences(true)}
-            className={`flex items-center gap-2 ${
-              preferences.darkMode ? 'border-border text-foreground hover:bg-accent/20' : ''
-            }`}
+            className={`flex items-center gap-2 ${preferences.darkMode ? 'border-border text-foreground hover:bg-accent/20' : ''
+              }`}
           >
             <Settings className="h-4 w-4" />
             Preferences
           </Button>
         </div>
-        
+
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <div className="w-full lg:w-64 lg:sticky lg:top-8 space-y-6">
             <ImageControls
@@ -82,12 +79,11 @@ export default function Home() {
               darkMode={preferences.darkMode}
             />
           </div>
-          
-          <div className={`flex-1 flex items-center justify-center p-8 rounded-lg shadow-sm border ${
-            preferences.darkMode 
-              ? 'bg-gray-800 border-gray-700' 
+
+          <div className={`flex-1 flex items-center justify-center p-8 rounded-lg shadow-sm border ${preferences.darkMode
+              ? 'bg-gray-800 border-gray-700'
               : 'bg-white border-gray-100'
-          }`}>
+            }`}>
             {image ? (
               <ImageCanvas
                 image={image}
@@ -103,29 +99,26 @@ export default function Home() {
               />
             ) : (
               <div className="text-center text-gray-500">
-                <svg 
-                  className={`mx-auto h-12 w-12 mb-4 ${
-                    preferences.darkMode ? 'text-gray-600' : ''
-                  }`} 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className={`mx-auto h-12 w-12 mb-4 ${preferences.darkMode ? 'text-gray-600' : ''
+                    }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className={`text-lg font-medium mb-2 ${
-                  preferences.darkMode ? 'text-gray-400' : ''
-                }`}>
+                <p className={`text-lg font-medium mb-2 ${preferences.darkMode ? 'text-gray-400' : ''
+                  }`}>
                   No image selected
                 </p>
-                <p className={`text-sm ${
-                  preferences.darkMode ? 'text-gray-500' : ''
-                }`}>
+                <p className={`text-sm ${preferences.darkMode ? 'text-gray-500' : ''
+                  }`}>
                   Upload an image to get started
                 </p>
               </div>
@@ -133,9 +126,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={`mt-8 text-center text-sm ${
-          preferences.darkMode ? 'text-gray-400' : 'text-gray-500'
-        }`}>
+        <div className={`mt-8 text-center text-sm ${preferences.darkMode ? 'text-gray-400' : 'text-gray-500'
+          }`}>
           <p>Press ? for keyboard shortcuts • Ctrl+Z to undo • Ctrl+Y to redo</p>
         </div>
 

@@ -1,15 +1,20 @@
 import { useEffect } from 'react'
-import { ImageTransform, OVERLAY_TYPES } from '../lib/constants'
+import { ImageTransform, OverlayType, OVERLAY_TYPES } from '@/lib/constants'
+
+interface ImageExportOptions {
+  format: 'image/png' | 'image/jpeg' | 'image/webp'
+  quality?: number
+}
 
 interface UseKeyboardShortcutsProps {
   isEnabled: boolean
   scale: number
   offsetX: number
   offsetY: number
-  overlayType: string | null
+  overlayType: OverlayType | null
   onTransformChange: (transform: Partial<ImageTransform>) => void
-  onSave?: () => void
-  onReset?: () => void
+  onSave: (options: ImageExportOptions) => void
+  onReset: () => void
   onUndo?: () => void
   onRedo?: () => void
   onSaveState?: () => void
@@ -28,84 +33,97 @@ export function useKeyboardShortcuts({
   onUndo,
   onRedo,
   onSaveState,
-  onShowSavedStates,
+  onShowSavedStates
 }: UseKeyboardShortcutsProps) {
   useEffect(() => {
+    if (!isEnabled) return
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isEnabled) return
-
-      // Handle undo/redo and save state shortcuts
-      if ((e.metaKey || e.ctrlKey) && !e.altKey) {
-        if (e.key === 'z' && !e.shiftKey) {
-          e.preventDefault()
-          onUndo?.()
-          return
-        }
-        if ((e.key === 'y') || (e.key === 'z' && e.shiftKey)) {
-          e.preventDefault()
-          onRedo?.()
-          return
-        }
-        if (e.key === 's') {
-          e.preventDefault()
-          onSaveState?.()
-          return
-        }
-        if (e.key === 'b') {
-          e.preventDefault()
-          onShowSavedStates?.()
-          return
-        }
+      // Don't trigger shortcuts when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
       }
 
-      // Handle other shortcuts only if no modifiers are pressed
-      if (e.metaKey || e.ctrlKey || e.altKey) return
-
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '1', '2', '0', 'r', 's'].includes(e.key.toLowerCase())) {
-        e.preventDefault()
-      }
-
-      const step = e.shiftKey ? 10 : 1
-      const scaleStep = e.shiftKey ? 0.1 : 0.01
+      // Don't trigger shortcuts with modifier keys (except for saving)
+      if (e.altKey || e.metaKey) return
 
       switch (e.key.toLowerCase()) {
-        case 'arrowup':
-          onTransformChange({ offsetY: offsetY - step })
-          break
-        case 'arrowdown':
-          onTransformChange({ offsetY: offsetY + step })
-          break
-        case 'arrowleft':
-          onTransformChange({ offsetX: offsetX - step })
-          break
-        case 'arrowright':
-          onTransformChange({ offsetX: offsetX + step })
-          break
-        case '+':
-        case '=':
-          onTransformChange({ scale: scale + scaleStep })
-          break
-        case '-':
-          onTransformChange({ scale: scale - scaleStep })
-          break
-        case '1':
-          onTransformChange({ 
-            overlayType: overlayType === OVERLAY_TYPES.CINEMATIC ? null : OVERLAY_TYPES.CINEMATIC 
-          })
-          break
-        case '2':
-          onTransformChange({ 
-            overlayType: overlayType === OVERLAY_TYPES.FULL_FRAME ? null : OVERLAY_TYPES.FULL_FRAME 
-          })
-          break
-        case '0':
-          onTransformChange({ overlayType: null })
+        case 's':
+          if (e.ctrlKey && onSaveState) {
+            e.preventDefault()
+            onSaveState()
+          } else if (!e.ctrlKey) {
+            e.preventDefault()
+            onSave({ format: 'image/png' }) // Default to PNG for keyboard shortcut
+          }
           break
         case 'r':
-          onReset?.()
+          if (!e.ctrlKey) {
+            e.preventDefault()
+            onReset()
+          }
           break
-        case 's':
-          onSave?.()
+        case 'b':
+          if (e.ctrlKey && onShowSavedStates) {
+            e.preventDefault()
+            onShowSavedStates()
+          }
+          break
+        case 'z':
+          if (e.ctrlKey && onUndo) {
+            e.preventDefault()
+            onUndo()
+          }
+          break
+        case 'y':
+          if (e.ctrlKey && onRedo) {
+            e.preventDefault()
+            onRedo()
+          }
+          break
+        case '0':
+          if (!e.ctrlKey) {
+            e.preventDefault()
+            onTransformChange({ overlayType: null })
+          }
+          break
+        case '1':
+          if (!e.ctrlKey) {
+            e.preventDefault()
+            onTransformChange({ overlayType: OVERLAY_TYPES.CINEMATIC })
+          }
+          break
+        case '2':
+          if (!e.ctrlKey) {
+            e.preventDefault()
+            onTransformChange({ overlayType: OVERLAY_TYPES.FULL_FRAME })
+          }
+          break
+        case 'arrowleft':
+          e.preventDefault()
+          onTransformChange({ offsetX: Math.max(-500, offsetX - (e.shiftKey ? 10 : 1)) })
+          break
+        case 'arrowright':
+          e.preventDefault()
+          onTransformChange({ offsetX: Math.min(500, offsetX + (e.shiftKey ? 10 : 1)) })
+          break
+        case 'arrowup':
+          e.preventDefault()
+          onTransformChange({ offsetY: Math.max(-500, offsetY - (e.shiftKey ? 10 : 1)) })
+          break
+        case 'arrowdown':
+          e.preventDefault()
+          onTransformChange({ offsetY: Math.min(500, offsetY + (e.shiftKey ? 10 : 1)) })
+          break
+        case '-':
+        case '_':
+          e.preventDefault()
+          onTransformChange({ scale: Math.max(0.1, scale - (e.shiftKey ? 0.5 : 0.1)) })
+          break
+        case '=':
+        case '+':
+          e.preventDefault()
+          onTransformChange({ scale: Math.min(5, scale + (e.shiftKey ? 0.5 : 0.1)) })
           break
       }
     }
@@ -117,7 +135,6 @@ export function useKeyboardShortcuts({
     scale,
     offsetX,
     offsetY,
-    overlayType,
     onTransformChange,
     onSave,
     onReset,
