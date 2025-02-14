@@ -1,22 +1,20 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { type EditorPreferences } from '@/lib/constants'
+import { Monitor, Moon, Sun, Settings, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { ImageTransform } from '@/lib/constants'
-import { Settings, RotateCcw } from 'lucide-react'
 
 interface PreferencesDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  defaultTransform: ImageTransform
+  defaultTransform: Partial<ImageTransform>
   autoSaveSettings: boolean
   darkMode: boolean
-  onUpdatePreferences: (updates: { 
-    defaultTransform?: ImageTransform
-    autoSaveSettings?: boolean
-    darkMode?: boolean
-  }) => void
+  preferences: EditorPreferences
+  onUpdatePreferences: (preferences: Partial<EditorPreferences>) => void
   onResetPreferences: () => void
 }
 
@@ -26,12 +24,13 @@ export function PreferencesDialog({
   defaultTransform,
   autoSaveSettings,
   darkMode,
+  preferences,
   onUpdatePreferences,
   onResetPreferences,
 }: PreferencesDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className={darkMode ? 'dark bg-gray-800 text-white' : ''}>
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold flex items-center gap-2">
             <Settings className="w-5 h-5" />
@@ -40,6 +39,39 @@ export function PreferencesDialog({
         </DialogHeader>
         <div className="grid gap-6 py-4">
           <div className="space-y-6">
+            <div className="space-y-2">
+              <Label>Theme</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={preferences.darkMode === 'light' ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => onUpdatePreferences({ darkMode: 'light' })}
+                  className="flex-1"
+                >
+                  <Sun className="w-4 h-4 mr-2" />
+                  Light
+                </Button>
+                <Button
+                  variant={preferences.darkMode === 'dark' ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => onUpdatePreferences({ darkMode: 'dark' })}
+                  className="flex-1"
+                >
+                  <Moon className="w-4 h-4 mr-2" />
+                  Dark
+                </Button>
+                <Button
+                  variant={preferences.darkMode === 'system' ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => onUpdatePreferences({ darkMode: 'system' })}
+                  className="flex-1"
+                >
+                  <Monitor className="w-4 h-4 mr-2" />
+                  System
+                </Button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between space-x-4">
               <Label htmlFor="auto-save" className="text-sm font-medium">Auto-save settings</Label>
               <Switch
@@ -49,19 +81,10 @@ export function PreferencesDialog({
               />
             </div>
 
-            <div className="flex items-center justify-between space-x-4">
-              <Label htmlFor="dark-mode" className="text-sm font-medium">Dark mode</Label>
-              <Switch
-                id="dark-mode"
-                checked={darkMode}
-                onCheckedChange={(checked) => onUpdatePreferences({ darkMode: checked })}
-              />
-            </div>
-
             <div className="space-y-3">
               <Label className="text-sm font-medium">Default Scale</Label>
               <Slider
-                value={[defaultTransform.scale]}
+                value={[defaultTransform.scale ?? 1]}
                 onValueChange={([value]) => 
                   onUpdatePreferences({
                     defaultTransform: { ...defaultTransform, scale: value }
@@ -73,7 +96,7 @@ export function PreferencesDialog({
                 className="w-full"
               />
               <div className="text-xs text-muted-foreground text-right">
-                {defaultTransform.scale.toFixed(1)}x
+                {(defaultTransform.scale ?? 1).toFixed(1)}x
               </div>
             </div>
 
@@ -83,7 +106,7 @@ export function PreferencesDialog({
                 onClick={onResetPreferences}
                 className="dark:border-border dark:text-foreground dark:hover:bg-secondary/80"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-4 h-4 mr-2" />
                 Reset to Defaults
               </Button>
               <Button 

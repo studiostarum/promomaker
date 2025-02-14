@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
@@ -197,18 +197,20 @@ export function ImageControls({
         variant: "destructive"
       })
     }
-  }, [onRestoreState, toast])
+  }, [onRestoreState])
+
+  const prevScaleRef = useRef(scale);
+  const prevOffsetXRef = useRef(offsetX);
+  const prevOffsetYRef = useRef(offsetY);
 
   useEffect(() => {
-    if (onRestoreState) {
-      onTransformChange({
-        scale: scale,
-        offsetX: offsetX,
-        offsetY: offsetY,
-        overlayType: overlayType
-      })
+    if (prevScaleRef.current !== scale || prevOffsetXRef.current !== offsetX || prevOffsetYRef.current !== offsetY) {
+      onTransformChange({ scale, offsetX, offsetY, overlayType });
+      prevScaleRef.current = scale;
+      prevOffsetXRef.current = offsetX;
+      prevOffsetYRef.current = offsetY;
     }
-  }, [scale, offsetX, offsetY, overlayType, onTransformChange, onRestoreState])
+  }, [scale, offsetX, offsetY, overlayType, onTransformChange]);
 
   const handleImportStates = async (jsonData: string) => {
     try {

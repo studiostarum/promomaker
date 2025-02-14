@@ -27,3 +27,11 @@ export const DEFAULT_TRANSFORM: ImageTransform = {
   offsetY: 0,
   overlayType: null,
 }
+
+export interface EditorPreferences {
+  darkMode: ThemePreference
+  defaultTransform: Partial<ImageTransform>
+  autoSaveSettings: boolean
+}
+
+export type ThemePreference = 'light' | 'dark' | 'system'

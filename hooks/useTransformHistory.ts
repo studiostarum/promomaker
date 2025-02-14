@@ -1,72 +1,51 @@
 import { useState, useCallback } from 'react'
 import { ImageTransform } from '@/lib/constants'
 
-interface HistoryState {
-  past: ImageTransform[]
-  present: ImageTransform
-  future: ImageTransform[]
-}
-
 export function useTransformHistory(initialTransform: ImageTransform) {
-  const [history, setHistory] = useState<HistoryState>({
-    past: [],
-    present: initialTransform,
-    future: []
-  })
+  const [history, setHistory] = useState<ImageTransform[]>([initialTransform])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [transform, setTransform] = useState<ImageTransform>(initialTransform)
 
-  const updateTransform = useCallback((transform: Partial<ImageTransform>) => {
-    setHistory(current => ({
-      past: [...current.past, current.present],
-      present: { ...current.present, ...transform },
-      future: []
-    }))
-  }, [])
+  const updateTransform = useCallback((newTransform: Partial<ImageTransform>) => {
+    const updatedTransform = { ...transform, ...newTransform }
+    
+    setTransform(updatedTransform)
+    setHistory(prev => {
+      const newHistory = prev.slice(0, currentIndex + 1)
+      return [...newHistory, updatedTransform]
+    })
+    setCurrentIndex(prev => prev + 1)
+  }, [currentIndex, transform])
 
   const undo = useCallback(() => {
-    setHistory(current => {
-      if (current.past.length === 0) return current
-
-      const previous = current.past[current.past.length - 1]
-      const newPast = current.past.slice(0, -1)
-
-      return {
-        past: newPast,
-        present: previous,
-        future: [current.present, ...current.future]
-      }
-    })
-  }, [])
+    if (currentIndex > 0) {
+      const newIndex = currentIndex - 1
+      setCurrentIndex(newIndex)
+      setTransform(history[newIndex])
+    }
+  }, [currentIndex, history])
 
   const redo = useCallback(() => {
-    setHistory(current => {
-      if (current.future.length === 0) return current
+    if (currentIndex < history.length - 1) {
+      const newIndex = currentIndex + 1
+      setCurrentIndex(newIndex)
+      setTransform(history[newIndex])
+    }
+  }, [currentIndex, history])
 
-      const next = current.future[0]
-      const newFuture = current.future.slice(1)
-
-      return {
-        past: [...current.past, current.present],
-        present: next,
-        future: newFuture
-      }
-    })
-  }, [])
-
-  const reset = useCallback((transform: ImageTransform) => {
-    setHistory({
-      past: [],
-      present: transform,
-      future: []
-    })
+  const reset = useCallback((newTransform: ImageTransform) => {
+    setTransform(newTransform)
+    setHistory([newTransform])
+    setCurrentIndex(0)
   }, [])
 
   return {
-    transform: history.present,
+    transform,
     updateTransform,
     undo,
     redo,
     reset,
-    canUndo: history.past.length > 0,
-    canRedo: history.future.length > 0
+    canUndo: currentIndex > 0,
+    canRedo: currentIndex < history.length - 1
   }
 }

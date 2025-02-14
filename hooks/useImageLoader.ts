@@ -1,12 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useToast } from './use-toast'
 
-const ALLOWED_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp'
-]
-
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 export function useImageLoader() {
@@ -14,7 +9,7 @@ export function useImageLoader() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const handleImageLoad = async (file: File): Promise<string> => {
+  const handleImageLoad = useCallback(async (file: File): Promise<string> => {
     setIsLoading(true)
     setLoadError(null)
 
@@ -31,27 +26,38 @@ export function useImageLoader() {
 
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
+        let mounted = true
         
         reader.onload = () => {
           // Validate that it's actually an image
           const img = new Image()
           img.onload = () => {
-            setIsLoading(false)
-            resolve(reader.result as string)
+            if (mounted) {
+              setIsLoading(false)
+              resolve(reader.result as string)
+            }
           }
           img.onerror = () => {
-            setIsLoading(false)
-            reject(new Error('Invalid image file'))
+            if (mounted) {
+              setIsLoading(false)
+              reject(new Error('Invalid image file'))
+            }
           }
           img.src = reader.result as string
         }
 
         reader.onerror = () => {
-          setIsLoading(false)
-          reject(new Error('Failed to read file'))
+          if (mounted) {
+            setIsLoading(false)
+            reject(new Error('Failed to read file'))
+          }
         }
 
         reader.readAsDataURL(file)
+
+        return () => {
+          mounted = false
+        }
       })
     } catch (error) {
       setIsLoading(false)
@@ -64,7 +70,7 @@ export function useImageLoader() {
       })
       throw error
     }
-  }
+  }, [toast])
 
   return {
     isLoading,
