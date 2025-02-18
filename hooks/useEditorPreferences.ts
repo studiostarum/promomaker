@@ -45,6 +45,15 @@ export function useEditorPreferences() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
+  useEffect(() => {
+    const isDarkMode = preferences.darkMode === 'system' ? systemDarkMode : preferences.darkMode === 'dark'
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [preferences.darkMode, systemDarkMode])
+
   const updatePreferences = (newPreferences: Partial<EditorPreferences>) => {
     setPreferences(prev => {
       const updated = { ...prev, ...newPreferences }

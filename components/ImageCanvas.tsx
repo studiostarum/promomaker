@@ -99,14 +99,10 @@ export function ImageCanvas({
   }, [image, overlayType, scale, offsetX, offsetY, darkMode])
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center w-full h-full">
       <canvas 
         ref={canvasRef}
-        className={`rounded-lg aspect-square border border-gray-200 dark:border-primary-700 ${isLoading ? 'opacity-50' : ''}`}
-        style={{ 
-          width: `${IMAGE_CONSTRAINTS.CANVAS_SIZE}px`, 
-          height: `${IMAGE_CONSTRAINTS.CANVAS_SIZE}px` 
-        }}
+        className={`w-full h-full max-w-full max-h-full rounded-lg aspect-square border border-gray-200 dark:border-primary-700 ${isLoading ? 'opacity-50' : ''}`}
         tabIndex={0}
       />
       {isLoading && (

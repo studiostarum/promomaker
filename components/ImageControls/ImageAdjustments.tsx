@@ -29,7 +29,6 @@ export function ImageAdjustments({
           size="sm"
           onClick={onReset}
           title="Reset all adjustments (R)"
-          className="dark:hover:bg-gray-800"
         >
           Reset All
         </Button>

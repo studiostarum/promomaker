@@ -32,11 +32,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
 
   return (
     <div
-      className={`relative border-2 border-dashed rounded-lg p-4 transition-colors
-        ${isDragging
-          ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10'
-          : 'border-gray-300 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-600'
-        }`}
+      className={`relative border-2 border-dashed rounded-lg p-4 transition-colors border-gray-300 hover:border-gray-400 dark:border-white/20 dark:hover:border-white/30 dark:hover:bg-white/5`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -47,12 +43,12 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
         onChange={onImageUpload}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
-      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-center text-sm dark:text-white">
         {isDragging
           ? 'Drop image here'
           : 'Drop image here, paste from clipboard, or click to upload'}
       </div>
-      <div className="text-center text-xs mt-1 text-gray-400 dark:text-gray-500">
+      <div className="text-center text-xs mt-1 dark:text-white/50">
         Supports JPG, PNG, and WebP
       </div>
     </div>

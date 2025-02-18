@@ -83,7 +83,7 @@ export function PreferencesDialog({
               <Label className="text-sm font-medium">Default Scale</Label>
               <Slider
                 value={[defaultTransform.scale ?? 1]}
-                onValueChange={([value]) => 
+                onValueChange={([value]) =>
                   onUpdatePreferences({
                     defaultTransform: { ...defaultTransform, scale: value }
                   })
@@ -99,17 +99,15 @@ export function PreferencesDialog({
             </div>
 
             <div className="pt-4 flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={onResetPreferences}
-                className="dark:border-border dark:text-foreground dark:hover:bg-secondary/80"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset to Defaults
+                <RotateCcw className="w-4 h-4" />
+                Reset to default
               </Button>
-              <Button 
+              <Button
                 onClick={() => onOpenChange(false)}
-                className="dark:text-primary-foreground"
               >
                 Done
               </Button>
